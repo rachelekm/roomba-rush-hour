@@ -1,0 +1,50 @@
+version: "3.1"
+services:
+  database:
+    image: quay.io/azavea/postgis:3-postgres12.4-slim
+    environment:
+      - POSTGRES_DB=roombarush
+      - POSTGRES_PASSWORD=roombarush
+      - POSTGRES_USER=roombarush
+    healthcheck:
+      test: pg_isready -U roombarush
+      interval: 3s
+      timeout: 3s
+      retries: 3
+
+  django:
+    image: roombarush
+    environment:
+      - POSTGRES_HOST=database
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=roombarush
+      - POSTGRES_PASSWORD=roombarush
+      - POSTGRES_DB=roombarush
+      - DJANGO_SECRET_KEY=secret
+    build:
+      context: ./django
+      dockerfile: Dockerfile
+    volumes:
+      - ./django:/usr/local/src/django
+    working_dir: /usr/local/src/django
+    ports:
+      - "8080:8080"
+    depends_on:
+      database:
+        condition: service_healthy
+    command:
+      - "-b :8080"
+      - "--reload"
+      - "--access-logfile=-"
+      - "--error-logfile=-"
+      - "--log-level=info"
+      - "roombarush.wsgi"
+
+  shellcheck:
+    image: koalaman/shellcheck:stable
+    volumes:
+      - ./:/usr/local/src
+    working_dir: /usr/local/src
+
+volumes:
+  pgdata:
