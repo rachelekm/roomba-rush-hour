@@ -42,6 +42,8 @@ Vagrant.configure(2) do |config|
     if ! grep -q "cd /vagrant" "/home/vagrant/.bashrc"; then
       echo "cd /vagrant" >> "/home/vagrant/.bashrc"
     fi
+    
+    export POSTGRES_DB_PASSWORD=roombarush
 
     cd /vagrant
     su vagrant ./scripts/update

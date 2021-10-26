@@ -28,6 +28,13 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
         # Apply any outstanding Django migrations
         ./scripts/manage migrate --noinput
 
+        # Install PostgreSQL
+        sudo apt-get --assume-yes install postgresql-client
+
+        # Populate api_streetcenterline table
+        yes "${POSTGRES_DB_PASSWORD}" | sudo psql -U roombarush -h localhost -c "CREATE EXTENSION IF NOT EXISTS postgis;" \
+            -c "\i data/street_centerline.sql;"
+
         docker-compose \
             -f docker-compose.yml \
             stop
